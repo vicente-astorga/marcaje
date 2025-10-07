@@ -1,0 +1,28 @@
+name: Discord Alert Test
+
+on:
+  schedule:
+    # Runs at 2:45 PM UTC and 3:45 PM UTC (covers 11:45 AM Chile time)
+    - cron: '45 14,15 * * *'
+  
+  workflow_dispatch:
+
+jobs:
+  check_time:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if it's 11:45 AM Chile
+        run: |
+          current_hour=$(TZ='America/Santiago' date +'%H')
+          current_min=$(TZ='America/Santiago' date +'%M')
+          echo "Current time in Santiago: $current_hour:$current_min"
+          
+          if [ "$current_hour" == "11" ] && [ "$current_min" == "45" ]; then
+            echo "It's 11:45 AM Chile, running tasks..."
+            echo "run_tasks=true" >> $GITHUB_ENV
+          fi
+
+      - name: Send Discord Alert
+        if: env.run_tasks == 'true'
+        run: |
+          echo "Discord alert sent"
